@@ -44,7 +44,7 @@ GrabCut 是2004年提出的分割算法，基础是 Graph cut 算法，这篇论
 
 - **中间结果展示**：
 
-  ![show](.\data\show.png)
+  ![show](data\show.png)
 
 
 
