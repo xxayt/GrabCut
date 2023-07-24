@@ -8,7 +8,7 @@
 ## Install：Opencv(c++) & Cmake
 
 1. 按照[此教程](https://blog.csdn.net/qq_45022687/article/details/120241068)在VScode内搭建OpenCV，注意完全按照他选的版本
-2. 学习简单使用cmake关联多文件，并选择release模式（能够看懂我的[CMakeLists.txt](.\MyCode-GMM-version\CMakeLists.txt)即可）
+2. 学习简单使用cmake关联多文件，并选择release模式（能够看懂我的[CMakeLists.txt](./MyCode-GMM-version/CMakeLists.txt)即可）
 
 ## Run
 
@@ -26,7 +26,7 @@ cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 mingw32-make
 ```
 
-运行：新建终端，进入[bin/release](.\MyCode-GMM-version\bin\release)文件夹，运行程序，选择图片
+运行：新建终端，进入[bin/release](./MyCode-GMM-version/bin/release)文件夹，运行程序，选择图片
 
 ```
 cd .\bin\release\
