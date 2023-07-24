@@ -1,58 +1,62 @@
+> **任务要求**：使用C++复现[GrabCut论文](https://cvg.ethz.ch/teaching/cvl/2012/grabcut-siggraph04.pdf)，GraphCut部分可调用函数库[Max-flow/min-cut](https://vision.cs.uwaterloo.ca/code/)，图片交互部分可用OpenCV接口。对于400*600图片要求在release模式下，运行时间通常在1s内。
 
+- **文件解释**：
+  - [MyCode-GMM-version](./MyCode-GMM-version)：独立实现 `GrabCut` 功能。可在[MyCode-GCApplication.cpp](./MyCode-GMM-version/core/MyCode-GCApplication.cpp)中查看调用的 `gc.GrabCut` 函数
+  - [OpenCV-version](./OpenCV-version)：调用OpenCV中接口实现 `GrabCut` 功能。可在[OpenCV-GCApplication.cpp](./OpenCV-version/core/OpenCV-GCApplication.cpp)中查看调用的 `grabCut` 函数
 
-> 要求实现一篇论文“GrabCut” — Interactive Foreground Extraction using Iterated Graph Cuts, ACM SIGGRAPH, 2004.
->
-> https://cvg.ethz.ch/teaching/cvl/2012/grabcut-siggraph04.pdf
->
-> 实现GrabCut任务时请注意：
->
-> 1. Matting部分不是GrabCut算法的精华，这部分可以不做。
-> 2. 注意输出整个程序的一些重要中间结果（那些重要自己判断），面试中会有相关问题。
-> 3. 如果有期末考试之类的事情，优先准备期末考试，不用急着参与测验。测验问题回答时的错误不要归因于忙期末考试所以没时间细看论文。
-> 4. 面试用QQ视频共享桌面的形式。
-> 5. 代码请用C++自己实现（GraphCut部分可以调用现成的函数库：https://vision.cs.uwaterloo.ca/code/ 中的Max-flow/min-cut）。图片的输入输出和用户交互部分推荐调用OpenCV。Python 语言不是不让用，但是很难写出实时运行的代码
-> 6. 完成这个任务时，请思考一个问题，GMM颜色模型换成颜色直方图（可以参考这篇论文[Global contrast based salient region detection](https://mmcheng.net/salobj/) 看看怎么实现快速的彩色颜色的直方图），会对结果有什么影响。
-> 7. 对于一个400*600的图像，这个程序运行时间通常是1s以内（实现的好的话，0.1s左右也很正常）。如果你的程序运行时间明显过长，请认真优化。注意测量程序执行时间请用release模式（显示，实际运行等场合用的），而不是debug模式（调试程序用的，经常比release模式慢10倍左右）。
->
-> 请在收到这个考核题目10天之内联系老师面试。第一轮面试由任博，刘夏雷，或郭春乐老师进行（我已抄送各位老师）。任博老师（微信号：Rabbikun）统一安排。
 
 ## Install：Opencv(c++) & Cmake
 
-按照[这个(VScode搭建Opencv)](https://blog.csdn.net/qq_45022687/article/details/120241068)做的，要完全按照他选的版本
+1. 按照[此教程](https://blog.csdn.net/qq_45022687/article/details/120241068)在VScode内搭建OpenCV，注意完全按照他选的版本
+2. 学习简单使用cmake关联多文件，并选择release模式（能够看懂我的[CMakeLists.txt](.\MyCode-GMM-version\CMakeLists.txt)即可）
+
+## Run
+
+进入[MyCode-GMM-version](./MyCode-GMM-version)文件夹，新建build文件夹
+
+```
+mkdir build
+cd build
+```
+
+编译cmake
+
+```
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+mingw32-make
+```
+
+运行：新建终端，进入[bin/release](.\MyCode-GMM-version\bin\release)文件夹，运行程序，选择图片
+
+```
+cd .\bin\release\
+.\main.exe ../../../data/sheep.jpg
+```
 
 ## Introduction
 
-。。。
+GrabCut 是2004年提出的分割算法，基础是 Graph cut 算法，这篇论文回顾了基于 S-T 图的能量优化算法（Graph cut 这篇论文提出了最小化能量函数的优化方法），并关联最小割 (min-cut) 问题进行求解，其中还加入混合高斯模型 (GMM) 对能量项进行优化。
 
-## Result
+- **我的理解**：
+  - 我认为Graph cut提出的能量函数的思想是整个分割算法的核心，它用 E 来表示整幅图片的能量值，分别由区域能量项和边界平滑项两部分组成。
+  - 假设将整幅图片想成地图，像素点值大的地方表示海拔高，那我们分割前景背景的界限就是海拔变化大的区域。但是又要从整体图像来分析，不可能遇到一个悬崖就作为分割。因此区域能量项相当于从整体出发，分析整幅地图，找到高原和盆地；而边界平滑项相当于从局部出发，寻找悬崖、峭壁等瞬间变化大的区域。（既保证以大见小，又以小见大。）
+  - 而这个算法的最终效果也很大程度取决于平衡整体函数和局部函数的系数 gamma，这块我后面在[ppt](./GrabCut-PPT汇报.pdf)中进行了分析。
 
-sheep
+- **中间结果展示**：
 
-| 迭代2次（Usum, Vsum） |                      $K=2$                       |                      $K=5$                       | $K=10$ |
-| :-------------------: | :----------------------------------------------: | :----------------------------------------------: | :----: |
-|     $\gamma= 10$      | （1464352, 24665）0.762s（1464226, 24738）0.368s | (1487957, 14941) 0.587s (1486784, 15332) 0.404s  |        |
-|     $\gamma= 50$      | (1490879, 25298) 0.679s; (1489397, 24348) 0.227s | （1464352, 24665）0.762s（1464226, 24738）0.368s |        |
-|     $\gamma= 100$     |                                                  | (1454605, 37359) 0.796s; (1453664, 36674) 0.339s |        |
-|     $\gamma= 250$     |                                                  | (1448309, 83212) 0.885s;(1445567, 81238) 0.471s  |        |
+  ![show](.\data\show.png)
 
-bird
 
-| 迭代2次（Usum, Vsum*50/$\gamma$） |                      K=2                       |                       K=5                       | K=10 |
-| :-------------------------------: | :--------------------------------------------: | :---------------------------------------------: | :--: |
-|           $\gamma= 10$            | (647359, 23497) 0.665s; (643085, 19995) 0.358s | (667382, 31275) 0.361s；(667542, 38310) 0.248sn |      |
-|           $\gamma= 50$            | (640962, 19833) 0.392s; (640659, 19689) 0.286s | (663338, 23480) 0.477s；(659077, 19983) 0.302s  |      |
-|           $\gamma= 100$           |                                                | (657127, 37407) 0.571s; (657131, 37586) 0.269s  |      |
-|           $\gamma= 250$           |                                                | (632116, 62559) 0.725s; (603171, 37275) 0.349s  |      |
 
 ## Reference
 
-- 论文
+- 参考论文
 
   1. [Interactive Graph Cutsfor Optimal Boundary & Region Segmentation  of Objects in N-D Images](https://ieeexplore.ieee.org/document/937505)
   2. ["GrabCut": interactive foreground extraction using iterated graph cuts](https://dl.acm.org/doi/10.1145/1015706.1015720)
-  3. [Global contrast based salient region  detection](https://ieeexplore.ieee.org/document/6871397) 
+  3. [Global contrast based salient region detection](https://ieeexplore.ieee.org/document/6871397)
 
-- 笔记
+- 参考笔记
 
   [GrabCut算法详解：从GMM模型说起_grabcut算法数学表示_lvzelong2014的博客-CSDN博客](https://blog.csdn.net/lvzelong2014/article/details/127616653)
 
@@ -86,7 +90,7 @@ bird
 
   [bittnt/ImageSpirit (github.com)](https://github.com/bittnt/ImageSpirit)
 
-- 讲解
+- 参考讲解
 
   [GrabCut_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1w44y1f7zy/?vd_source=05f97c55a318d0682c7cce673cbb8506)
 

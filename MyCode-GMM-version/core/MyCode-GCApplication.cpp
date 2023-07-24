@@ -145,18 +145,18 @@ void GCApplication::mouseClick(int event, int x, int y, int flags, void*)
             if(rectState == IN_PROCESS){  //矩形绘制模式
                 rect = Rect(Point(rect.x, rect.y), Point(x, y));
                 // 针对特定图像固定矩形区域
-                if(*winName == "sheep"){
-                    rect = Rect(Point(108, 90), Point(484, 395));
-                }
-                else if(*winName == "bird"){
-                    rect = Rect(Point(214, 118), Point(514, 294));
-                }
-                else if(*winName == "dog"){
-                    rect = Rect(Point(95, 261), Point(293, 545));
-                }
-                else if(*winName == "table"){
-                    rect = Rect(Point(158, 27), Point(537, 399));
-                }
+                // if(*winName == "sheep"){
+                //     rect = Rect(Point(108, 90), Point(484, 395));
+                // }
+                // else if(*winName == "bird"){
+                //     rect = Rect(Point(214, 118), Point(514, 294));
+                // }
+                // else if(*winName == "dog"){
+                //     rect = Rect(Point(95, 261), Point(293, 545));
+                // }
+                // else if(*winName == "table"){
+                //     rect = Rect(Point(158, 27), Point(537, 399));
+                // }
                 rectState = SET;//矩形绘制完毕
                 setRectInMask();//设置矩形掩码区域像素值为3
                 CV_Assert(bgdPxls.empty() && fgdPxls.empty() && prBgdPxls.empty() && prFgdPxls.empty());//断言：背景或者前景点集合为空
