@@ -42,6 +42,41 @@ GrabCut 是2004年提出的分割算法，基础是 Graph cut 算法，这篇论
   - 假设将整幅图片想成地图，像素点值大的地方表示海拔高，那我们分割前景背景的界限就是海拔变化大的区域。但是又要从整体图像来分析，不可能遇到一个悬崖就作为分割。因此区域能量项相当于从整体出发，分析整幅地图，找到高原和盆地；而边界平滑项相当于从局部出发，寻找悬崖、峭壁等瞬间变化大的区域。（既保证以大见小，又以小见大。）
   - 而这个算法的最终效果也很大程度取决于平衡整体函数和局部函数的系数 gamma，这块我后面在[ppt](./GrabCut-PPT汇报.pdf)中进行了分析。
 
+- **核心代码**：根据[GrabCut论文](https://cvg.ethz.ch/teaching/cvl/2012/grabcut-siggraph04.pdf)中的算法步骤
+
+  ![step](data/step.png)
+  
+  - 在[GrabCut.cpp](MyCode-GMM-version/core/GrabCut/GrabCut.cpp)的主函数 `GrabCutSegmentation::GrabCut` 中编写核心步骤如下（各函数详细注释可在[GrabCut.cpp](MyCode-GMM-version/core/GrabCut/GrabCut.cpp)中查看）
+  
+    ```c++
+    if(mode == GC_WITH_RECT){
+        // 初始化mask
+        initMaskWithRect(mask, img.size(), rect);
+        // 初始化GMM模型
+        initGMMs(img, mask, backgroundGMM, foregroundGMM);
+    }
+    if(iterCount <= 0) return;
+    
+    // 计算Beta的值
+    const double beta = CalcBeta(img);
+    // 计算平滑项(边界能量项V)
+    Mat leftWeight, upleftWeight, upWeight, uprightWeight;
+    CalcSmoothness(img, beta, gamma, leftWeight, upleftWeight, upWeight, uprightWeight);
+    // 存储每个像素属于哪个高斯模型
+    Mat ComponentIndex(img.size(), CV_32SC1);
+    const double lambda = 8 * gamma + 1;
+    for(int i = 0; i < iterCount; i++){
+        int vCount = img.cols*img.rows;
+        int eCount = 2 * (4 * vCount - 3 * img.cols - 3 * img.rows + 2);  // 无向图=双向图
+        Graph<double, double, double> graph(vCount, eCount);  // 建图
+        AssignGMMComponents(img, mask, backgroundGMM, foregroundGMM, ComponentIndex);
+        LearnGMMParameters(img, mask, backgroundGMM, foregroundGMM, ComponentIndex);
+        getGraph(img, mask, backgroundGMM, foregroundGMM, leftWeight, upleftWeight, upWeight, uprightWeight, lambda, graph);
+        EstimateSegmentation(graph, mask);
+        CalcEneryFunction(graph, mask, leftWeight, upleftWeight, upWeight, uprightWeight);
+    }
+    ```
+  
 - **中间结果展示**：
 
   ![show](data/show.png)

@@ -334,6 +334,6 @@ void GrabCutSegmentation::GrabCut(InputArray arrayimg, InputOutputArray arraymas
 		LearnGMMParameters(img, mask, backgroundGMM, foregroundGMM, ComponentIndex);
 		getGraph(img, mask, backgroundGMM, foregroundGMM, leftWeight, upleftWeight, upWeight, uprightWeight, lambda, graph);
 		EstimateSegmentation(graph, mask);
-        // CalcEneryFunction(graph, mask, leftWeight, upleftWeight, upWeight, uprightWeight);
+        CalcEneryFunction(graph, mask, leftWeight, upleftWeight, upWeight, uprightWeight);
 	}
 }
